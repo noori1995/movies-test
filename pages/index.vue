@@ -1,7 +1,7 @@
 <template>
     <div>
-        <SearchBar />
-        <div class="grid-container" >
+        <SearchBar :dateRange="dateRange" @search="search"/>
+        <div class="grid-container">
             <MovieCard v-for="movie in moviesList" class="grid-item" :key="movie.id" :details="movie" :genres-list="genresList" />
         </div>
         <Pagination :range="range" @goToPreviousPage="goToPreviousPage" @goToNextPage="goToNextPage"/>
@@ -14,7 +14,8 @@ export default {
     data(){
         return {
             moviesList: [],
-            page: 1,
+            page:  Number(this.$route.query.page) || 1,
+            dateRange: { release_start_date: this.$route.query.release_start_date, release_end_date: this.$route.query.release_end_date },
             genresList: []
         }
     },
@@ -27,17 +28,23 @@ export default {
         async goToPreviousPage() {
             if(this.page > 1 ){
                 this.page = this.page - 1
-                this.moviesList = await useMoviesList(this.page)
+                await this.$router.push({path: this.$route.path, query: { ...this.$route.query, page: this.page }})
+                this.moviesList = await useMoviesList(this.$route.query)
             }
         },
         async goToNextPage() {
             this.page = this.page + 1
-            this.moviesList = await useMoviesList(this.page)
+            await this.$router.push({path: this.$route.path, query: { ...this.$route.query, page: this.page }})
+            this.moviesList = await useMoviesList(this.$route.query)
+        },
+        async search(dateRange) {
+            this.dateRange = dateRange;
+            await this.$router.push({path: this.$route.path, query: { ...this.$route.query, page: 1, ...this.dateRange }})
+            this.moviesList = await useMoviesList(this.$route.query)
         }
     },
-
     async mounted(){
-        this.moviesList = await useMoviesList(this.page)
+        this.moviesList = await useMoviesList(this.$route.query)
         this.genresList = await useGenresList()
     }    
 }
