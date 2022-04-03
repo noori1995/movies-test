@@ -40,7 +40,7 @@ export default {
         async search(dateRange) {
             this.dateRange = dateRange;
             this.page = 1;
-            await this.$router.push({path: this.$route.path, query: { ...this.$route.query, ...this.dateRange }})
+            await this.$router.push({path: this.$route.path, query: { ...this.$route.query, page: this.page, ...this.dateRange }})
             this.moviesList = await useMoviesList(this.$route.query)
         }
     },
